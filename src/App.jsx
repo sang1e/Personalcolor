@@ -102,73 +102,100 @@ function genCode() { return "PC" + Date.now().toString(36).toUpperCase().slice(-
 // ══════════════════════════════════════════
 function downloadPDF(record) {
   const S = SEASON_DATA[record.season];
+  const sw = (bg, extra="") => `display:inline-block;width:38px;height:38px;border-radius:8px;background-color:${bg} !important;border:1px solid rgba(0,0,0,0.08);${extra}`;
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
   <style>
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Noto Sans KR',sans-serif;background:#fff;color:#1a2744;padding:20px;}
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
-    .cover{background:${S.gradient};border-radius:16px;padding:32px;text-align:center;margin-bottom:20px;}
-    .season-title{font-size:28px;font-weight:800;color:#1a2744;margin:8px 0 4px;}
-    .season-en{font-size:14px;color:${S.accent};}
-    .customer{font-size:16px;color:${S.accent};margin-bottom:8px;}
-    .chips{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:12px;}
-    .chip{background:rgba(255,255,255,0.7);color:${S.accent};border:1px solid ${S.accent}40;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;}
-    .section{margin-bottom:20px;}
-    .sec-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${S.accent};font-weight:700;margin-bottom:10px;border-bottom:1px solid ${S.accent}30;padding-bottom:6px;}
-    .palette{display:flex;gap:6px;flex-wrap:wrap;}
-    .swatch{width:40px;height:40px;border-radius:8px;}
-    .tags{display:flex;gap:6px;flex-wrap:wrap;}
-    .tag{background:${S.chip};color:${S.accent};border:1px solid ${S.accent}30;border-radius:20px;padding:5px 12px;font-size:12px;}
-    .desc{font-size:13px;line-height:1.8;color:#555;margin-top:8px;}
-    .footer{text-align:center;margin-top:30px;padding:16px;background:#f8f8f8;border-radius:12px;font-size:11px;color:#888;}
-    @media print{body{padding:10px;}}
+    *{ box-sizing:border-box; margin:0; padding:0;
+       -webkit-print-color-adjust:exact !important;
+       print-color-adjust:exact !important;
+       color-adjust:exact !important; }
+    body{ font-family:'Noto Sans KR',sans-serif; background:#ffffff; color:#1a2744; padding:28px; max-width:700px; margin:0 auto; }
+    .cover{ background-image:${S.gradient}; border-radius:16px; padding:32px 24px; text-align:center; margin-bottom:24px; }
+    .cover-tag{ font-size:10px; letter-spacing:2px; color:${S.accent}; font-weight:700; margin-bottom:8px; }
+    .cover-name{ font-size:15px; color:${S.accent}; margin-bottom:4px; }
+    .cover-season{ font-size:26px; font-weight:800; color:#1a2744; margin-bottom:4px; }
+    .cover-en{ font-size:13px; color:${S.accent}; margin-bottom:14px; }
+    .chip{ background-color:rgba(255,255,255,0.75) !important; color:${S.accent}; border:1px solid ${S.accent}; border-radius:20px; padding:4px 12px; font-size:11px; font-weight:600; display:inline-block; margin:3px; }
+    .section{ margin-bottom:22px; }
+    .sec-title{ font-size:9px; letter-spacing:2px; text-transform:uppercase; color:${S.accent}; font-weight:700; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid ${S.accent}; }
+    .palette{ display:flex; gap:6px; flex-wrap:wrap; }
+    .tag{ background-color:${S.chip} !important; color:${S.accent}; border:1px solid ${S.accent}; border-radius:20px; padding:5px 13px; font-size:11px; font-weight:600; display:inline-block; margin:3px; }
+    .desc{ font-size:12px; line-height:1.85; color:#444; background-color:${S.light} !important; padding:12px 14px; border-radius:10px; margin-top:8px; }
+    .makeup-row{ display:flex; gap:20px; flex-wrap:wrap; }
+    .makeup-label{ font-size:10px; color:#888; margin-bottom:5px; }
+    .makeup-swatches{ display:flex; gap:5px; }
+    .footer{ text-align:center; margin-top:28px; padding:16px; background-color:${S.chip} !important; border-radius:12px; font-size:11px; color:${S.accent}; line-height:1.8; }
+    .date-info{ font-size:11px; color:#888; margin-top:12px; }
+    @page{ margin:12mm; }
+    @media print{
+      *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
+    }
   </style></head><body>
   <div class="cover">
-    <div style="font-size:11px;letter-spacing:2px;color:${S.accent};font-weight:700;">PERSONAL COLOR DIAGNOSIS</div>
-    <div class="customer">${record.name}님의 진단 결과</div>
-    <div class="season-title">${S.ko} · ${record.subtype}</div>
-    <div class="season-en">${S.en}</div>
-    <div class="chips">${S.keywords.map(k=>`<span class="chip">${k}</span>`).join("")}</div>
-    <div style="font-size:11px;color:#999;margin-top:12px;">진단일: ${record.date} · 컬러인에듀센터</div>
+    <div class="cover-tag">PERSONAL COLOR DIAGNOSIS · 컬러인에듀센터</div>
+    <div class="cover-name">${record.name}님의 진단 결과</div>
+    <div class="cover-season">${S.ko} · ${record.subtype}</div>
+    <div class="cover-en">${S.en}</div>
+    <div>${S.keywords.map(k=>`<span class="chip">${k}</span>`).join("")}</div>
+    <div class="date-info">진단일: ${record.date}</div>
   </div>
+
   <div class="section">
-    <div class="sec-title">Best Colors</div>
-    <div class="palette">${S.best.map(c=>`<div class="swatch" style="background:${c};"></div>`).join("")}</div>
+    <div class="sec-title">Best Colors · 베스트 컬러</div>
+    <div class="palette">${S.best.map(c=>`<span style="${sw(c)}"></span>`).join("")}</div>
   </div>
+
   <div class="section">
-    <div class="sec-title">Avoid Colors</div>
-    <div class="palette">${S.worst.map(c=>`<div class="swatch" style="background:${c};position:relative;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.7);font-size:16px;">✕</div>`).join("")}</div>
+    <div class="sec-title">Avoid Colors · 피해야 할 컬러</div>
+    <div class="palette">${S.worst.map(c=>`<span style="${sw(c,"display:inline-flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.9);font-size:14px;")}">✕</span>`).join("")}</div>
   </div>
+
   <div class="section">
-    <div class="sec-title">Makeup Colors</div>
-    <div style="display:flex;gap:16px;">
-      <div><div style="font-size:11px;color:#888;margin-bottom:4px;">립&블러셔</div><div style="display:flex;gap:6px;"><div class="swatch" style="background:${S.makeup.lip};"></div><div class="swatch" style="background:${S.makeup.blush};"></div></div></div>
-      <div><div style="font-size:11px;color:#888;margin-bottom:4px;">아이섀도</div><div style="display:flex;gap:6px;"><div class="swatch" style="background:${S.makeup.shadow};"></div><div class="swatch" style="background:${S.best[2]};"></div></div></div>
-      <div><div style="font-size:11px;color:#888;margin-bottom:4px;">헤어</div><div style="display:flex;gap:6px;">${S.hair.map(c=>`<div class="swatch" style="background:${c};"></div>`).join("")}</div></div>
+    <div class="sec-title">Makeup · 메이크업</div>
+    <div class="makeup-row">
+      <div><div class="makeup-label">💋 립 &amp; 블러셔</div><div class="makeup-swatches"><span style="${sw(S.makeup.lip)}"></span><span style="${sw(S.makeup.blush)}"></span></div></div>
+      <div><div class="makeup-label">👁 아이섀도</div><div class="makeup-swatches"><span style="${sw(S.makeup.shadow)}"></span><span style="${sw(S.best[2])}"></span><span style="${sw(S.best[3])}"></span></div></div>
+      <div><div class="makeup-label">💇 헤어</div><div class="makeup-swatches">${S.hair.map(c=>`<span style="${sw(c)}"></span>`).join("")}</div></div>
     </div>
   </div>
+
   <div class="section">
-    <div class="sec-title">Fashion Style</div>
-    <div class="tags">${S.style.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
+    <div class="sec-title">Fashion Style · 패션 스타일</div>
+    <div>${S.style.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
     <div class="desc">${S.desc}</div>
   </div>
+
   <div class="section">
-    <div class="sec-title">Jewelry & Eyewear</div>
-    <div class="tags">${S.jewelry.map(j=>`<span class="tag">${j}</span>`).join("")}${S.eyewear.map(e=>`<span class="tag" style="background:#f0f0f0;color:#555;">${e}</span>`).join("")}</div>
+    <div class="sec-title">Jewelry &amp; Eyewear · 주얼리 &amp; 안경</div>
+    <div>${S.jewelry.map(j=>`<span class="tag">${j}</span>`).join("")}
+    ${S.eyewear.map(e=>`<span style="background-color:#f0f0f0 !important;color:#555;border:1px solid #ddd;border-radius:20px;padding:5px 13px;font-size:11px;display:inline-block;margin:3px;">${e}</span>`).join("")}</div>
   </div>
-  ${record.memo ? `<div class="section"><div class="sec-title">강사 메모</div><div class="desc">${record.memo}</div></div>` : ""}
+
+  ${record.memo?`<div class="section"><div class="sec-title">강사 메모</div><div class="desc">${record.memo}</div></div>`:""}
+
   <div class="footer">
     컬러인에듀센터 · Color In Story<br>
-    📞 063-221-2802 · 전북 전주시 홍산남로51 프렌즈빌딩 8층<br>
+    📞 063-221-2802 · 010-3443-2802<br>
+    📍 전북 전주시 홍산남로51 프렌즈빌딩 8층<br>
     본 진단 결과는 전문가 대면 진단을 기반으로 작성되었습니다.
   </div>
-  <script>window.onload=()=>{window.print();}</script>
+
+  <script>
+    window.onload = () => {
+      setTimeout(() => window.print(), 800);
+    };
+  </script>
   </body></html>`;
-  const blob = new Blob([html], { type: "text/html" });
+  const blob = new Blob([html], { type:"text/html;charset=utf-8" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = `${record.name}_퍼스널컬러_${record.season}.html`;
-  a.click(); URL.revokeObjectURL(url);
+  const win = window.open(url, "_blank");
+  if (!win) {
+    const a = document.createElement("a");
+    a.href = url; a.download = `${record.name}_퍼스널컬러_${record.season}.html`;
+    a.click();
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
 // ══════════════════════════════════════════
