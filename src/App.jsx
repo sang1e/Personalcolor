@@ -67,32 +67,47 @@ const SUBTYPES = {
 // ══════════════════════════════════════════
 // 스토리지 헬퍼 (shared:true → 모든 사용자 공유)
 // ══════════════════════════════════════════
+// ── Google Sheets 연동 ──────────────────────
+// Apps Script 배포 후 아래 URL을 교체해주세요
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyo2AHwS3un5IThnnUIXeUgFo7dp_ZA3vIq5RAZ6wWtMHR9qQs43ZE46cUK6A6m_ZA/exec";
+
 async function saveRecord(record) {
   try {
-    const existing = await loadAllRecords();
-    const idx = existing.findIndex(r => r.code === record.code);
-    if (idx >= 0) existing[idx] = record; else existing.unshift(record);
-    await window.storage.set("pc_records", JSON.stringify(existing), true);
-    return true;
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "save", record }),
+    });
+    const data = await res.json();
+    return data.success;
   } catch { return false; }
 }
+
 async function loadAllRecords() {
   try {
-    const r = await window.storage.get("pc_records", true);
-    return r ? JSON.parse(r.value) : [];
+    const res = await fetch(`${SCRIPT_URL}?action=getAll`);
+    const data = await res.json();
+    return data.success ? data.records : [];
   } catch { return []; }
 }
+
 async function findRecord(code) {
   try {
-    const all = await loadAllRecords();
-    return all.find(r => r.code === code.trim().toUpperCase()) || null;
+    const res = await fetch(`${SCRIPT_URL}?action=find&code=${code.trim().toUpperCase()}`);
+    const data = await res.json();
+    return data.success ? data.record : null;
   } catch { return null; }
 }
+
 async function deleteRecord(code) {
   try {
-    const all = await loadAllRecords();
-    await window.storage.set("pc_records", JSON.stringify(all.filter(r => r.code !== code)), true);
-    return true;
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "delete", code }),
+    });
+    const data = await res.json();
+    return data.success;
   } catch { return false; }
 }
 function genCode() { return "PC" + Date.now().toString(36).toUpperCase().slice(-6); }
